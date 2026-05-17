@@ -1,40 +1,39 @@
-
-#define _CRT_SECURE_NO_WARNINGS
-#include "Valute.h"
+#include "valuta.h"
 #include <stdbool.h>
 
 int main() {
+    int izbor;
+    bool radi = true;
 
-	int izbor;
-	bool radi = true;
+    while (radi) {
+        printf("\n=== KALKULATOR VALUTA ===\n");
+        printf("Svi tecajevi su u odnosu na EUR\n");
 
-	while (radi)
-	{
-		printf("\n=== KALKULATOR VALUTA ===\n");
-		printf("\nSvi tecajevi su prikazani u odnosu na EUR (1 EUR = X VALUTA)\n");
-		printf("\n");
-		printf("1. Dodaj novu valutu (CREATE):\n");
-		printf("2. Prikazi sve valute (READ):\n");
-		printf("3. Azuriraj tecaj valute (UPDATE):\n");
-		printf("4. Izlaz\n");
-		scanf("%d", &izbor);
+        printf("1. Dodaj valutu\n");
+        printf("2. Prikazi valute\n");
+        printf("3. Azuriraj valutu\n");
+        printf("4. Obrisi valutu\n");
+        printf("5. Sortiraj valute\n");
+        printf("6. Trazi valutu\n");
+        printf("7. Konvertiraj iznos\n");
+        printf("8. Resetiraj datoteku\n");
+        printf("9. Izlaz\n");
 
+        printf("Odabir: ");
+        scanf("%d", &izbor);
 
-		switch ((IzbornikOpcije)izbor)
-		{
-		case DODAJ:
-			dodajValutu(); break;
-		case PRIKAZI:
-			prikaziValute(); break;
-		case AZURIRAJ:
-			azurirajValutu(); break;
-		case IZLAZ:
-			radi = false; break;
-		default:
-			printf("Neispravan odabir.\n");
+        switch ((IzbornikOpcija)izbor) {
+        case IZBORNIK_DODaj: dodajValutu(); break;
+        case IZBORNIK_PRIKAZI: prikaziValute(); break;
+        case IZBORNIK_AZURIRAJ: azurirajValutu(); break;
+        case IZBORNIK_OBRISI: obrisiValutu(); break;
+        case IZBORNIK_SORTIRAJ: sortirajValute(); break;
+        case IZBORNIK_TRAZI: traziValutu(); break;
+        case IZBORNIK_KONVERTIRAJ: konvertirajValutu(); break;
+        case IZBORNIK_IZLAZ: radi = false; break;
+        default: printf("Neispravan unos!\n");
+        }
+    }
 
-		}
-	}
-
-	return 0;
+    return 0;
 }

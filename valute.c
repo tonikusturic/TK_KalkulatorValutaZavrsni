@@ -1,118 +1,199 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include "Valute.h"
-#include <stdlib.h>
+#include "valuta.h"
+#include "util.h"
 #include <string.h>
+#include <errno.h>
 
-static const char* NAZIV_DATOTEKE = "valute.txt";
+/* (6,15) static varijable */
+static const char* PUTANJA_DATOTEKE = "valute.txt";
+static const int MAX_VALUTA = 100;
 
+/* (8) globalna varijabla */
+int brojacDodavanja = 0;
+
+/* ------------------ CREATE ------------------ */
 void dodajValutu() {
+    FILE* dat = fopen(PUTANJA_DATOTEKE, "a");
+    if (!dat) {
+        perror("Greska otvaranja datoteke");
+        return;
+    }
 
-	FILE* fp = fopen(NAZIV_DATOTEKE, "a");
-	if (!fp) {
-		perror("Greska pri otvaranju datoteke\n");
-		return;
-	}
+    Valuta nova;
+    printf("Unesi kod valute: ");
+    scanf("%3s", nova.kod);
+    printf("Unesi tecaj prema EUR: ");
+    scanf("%lf", &nova.tecaj);
 
-	Valuta valuta;
-	printf("Unesi kod valute (npr. USD): ");
-	scanf("%3s",valuta.kod);
-	printf("Unesite tecaj valute prema EUR: ");
-	scanf("%lf", &valuta.tecaj);
+    fprintf(dat, "%s %.2lf\n", nova.kod, nova.tecaj);
+    fclose(dat);
 
-	fprintf(fp, "%s %.2lf\n", valuta.kod, valuta.tecaj);
-	fclose(fp);
-
-	printf("Valuta dodana.\n");
+    brojacDodavanja++;
+    printf("Valuta dodana! Ukupno dodano: %d\n", brojacDodavanja);
 }
-//14(zastita parametara) + 20(funckije fseek/ftell/rewind)
+
+/* ------------------ READ ------------------ */
 void prikaziValute() {
+    FILE* dat = fopen(PUTANJA_DATOTEKE, "r");
+    if (!dat) {
+        perror("Greska otvaranja datoteke");
+        return;
+    }
 
-	FILE* fp = fopen(NAZIV_DATOTEKE, "r");
-	if (!fp) {
-		perror("Datoteka ne postoji.\n");
-		return;
-	}
+    /* (20) fseek, ftell, rewind */
+    fseek(dat, 0, SEEK_END);
+    long velicina = ftell(dat);
+    rewind(dat);
 
-	fseek(fp, 0, SEEK_END);
-	long velicina = ftell(fp);
-	rewind(fp);
-	printf("\n=== Velicina datoteke: %ld bajtova ===\n", velicina);
+    printf("Velicina datoteke: %ld bajtova\n", velicina);
 
-	Valuta valuta;
-	Valuta* valute = malloc(sizeof(Valuta) * MAX_VALUTE);
-	int broj = 0;
+    Valuta temp;
+    Valuta* lista = sigurnoAlociraj(sizeof(Valuta) * MAX_VALUTA);
 
-	printf("\n=== Popis valuta ===\n");
-	while (fscanf(fp, "%3s %lf", valuta.kod, &valuta.tecaj) == 2)
-	{
-		printf("%s %.2lf\n", valuta.kod, valuta.tecaj);
-		valute[broj++] = valuta;
-	}
-	
+    int broj = 0;
+
+    printf("\n--- POPIS VALUTA ---\n");
+    while (fscanf(dat, "%3s %lf", temp.kod, &temp.tecaj) == 2) {
+        printf("%s %.2lf\n", temp.kod, temp.tecaj);
+        lista[broj++] = temp;
+    }
+
+    printf("Prosjecni tecaj: %.3lf\n", prosjecniTecaj(lista, broj));
+
+    free(lista);
+    fclose(dat);
 }
 
+/* ------------------ UPDATE ------------------ */
 void azurirajValutu() {
+    Valuta* lista = NULL;
+    int broj = ucitajSveValute(&lista);
+    if (broj == 0) {
+        printf("Nema valuta.\n");
+        return;
+    }
 
-	FILE* fp = fopen(NAZIV_DATOTEKE, "r");
-	if (!fp) {
-		perror("Greska pri otvaranju datoteke.\n");
-		return;
-	}
+    char kodValute[4];
+    printf("Unesi kod za azuriranje: ");
+    scanf("%3s", kodValute);
 
-	Valuta* valute = malloc(sizeof(Valuta) * MAX_VALUTE);
+    for (int i = 0; i < broj; i++) {
+        if (strcmp(lista[i].kod, kodValute) == 0) {
+            printf("Unesi novi tecaj: ");
+            scanf("%lf", &lista[i].tecaj);
 
-	if (valute != NULL ) {
-		return -1;
-	}
+            spremiSveValute(lista, broj);
+            free(lista);
+            printf("Azurirano.\n");
+            return;
+        }
+    }
 
-	int broj = 0;
-	char trazeni_kod[4];
-	int pronadjena = 0;
-
-	while (broj < MAX_VALUTE && fscanf(fp,"%3s %lf", valute[broj].kod, &valute[broj].tecaj) == 2)
-	{
-		broj++;
-	}
-
-	fclose(fp);
-
-	printf("Unesite kod valute koju zelite azurirati (npr. EUR): \n");
-
-	scanf("%3s", trazeni_kod);
-
-	for (int i = 0; i < broj; i++)
-	{
-		if (strcmp(valute[i].kod, trazeni_kod) == 0) {
-			printf("Trenutni tecaj za %s je %.2lf. Unesite novi tecaj: \n",valute[i].kod, valute[i].tecaj);
-
-			scanf("%lf", &valute[i].tecaj);
-			pronadjena = 1;
-			break;
-			
-		}
-	}
-
-	if (!pronadjena) {
-		printf("Valuta %s nije pronadjena.\n",trazeni_kod);
-		free(valute);
-		return;
-	}
-
-	fp = fopen(NAZIV_DATOTEKE, "w");
-
-	if (!fp) {
-		perror("Greska pri otvaranju datoteke.\n");
-		free(valute);
-		return;
-	}
-
-	for (int i = 0; i < broj; i++)
-	{
-		fprintf(fp, "%s %lf\n", valute[i].kod, valute[i].tecaj);
-
-	}
-	fclose(fp);
-	free(valute);
-	printf("Valuta uspjesno azurirana:\n");
+    printf("Valuta nije pronadena.\n");
+    free(lista);
 }
-//1. sat konzultacijskih vjezbi
+
+/* ------------------ DELETE ------------------ */
+void obrisiValutu() {
+    Valuta* lista = NULL;
+    int broj = ucitajSveValute(&lista);
+    if (broj == 0) return;
+
+    char kodValute[4];
+    printf("Unesi kod za brisanje: ");
+    scanf("%3s", kodValute);
+
+    int noviBroj = 0;
+    for (int i = 0; i < broj; i++) {
+        if (strcmp(lista[i].kod, kodValute) != 0)
+            lista[noviBroj++] = lista[i];
+    }
+
+    spremiSveValute(lista, noviBroj);
+    free(lista);
+    printf("Valuta obrisana.\n");
+}
+
+/* ------------------ SORT ------------------ */
+void sortirajValute() {
+    Valuta* lista = NULL;
+    int broj = ucitajSveValute(&lista);
+
+    qsort(lista, broj, sizeof(Valuta), usporedbaTecajeva);
+
+    spremiSveValute(lista, broj);
+    free(lista);
+
+    printf("Sortirano po tecaju.\n");
+}
+
+int usporedbaTecajeva(const void* a, const void* b) {
+    const Valuta* v1 = (const Valuta*)a;
+    const Valuta* v2 = (const Valuta*)b;
+    return (v1->tecaj > v2->tecaj) - (v1->tecaj < v2->tecaj);
+}
+
+/* ------------------ SEARCH (rekurzija) ------------------ */
+int rekurzivnoTrazi(Valuta* lista, int broj, const char* kodValute) {
+    if (broj == 0) return -1;
+    if (strcmp(lista[broj - 1].kod, kodValute) == 0)
+        return broj - 1;
+
+    return rekurzivnoTrazi(lista, broj - 1, kodValute);
+}
+
+void traziValutu() {
+    Valuta* lista = NULL;
+    int broj = ucitajSveValute(&lista);
+
+    static char zadnjiKod[4];  /* (15) lokalna static varijabla */
+
+    char trazeniKod[4];
+    printf("Unesi kod za trazenje: ");
+    scanf("%3s", trazeniKod);
+
+    int indeks = rekurzivnoTrazi(lista, broj, trazeniKod);
+
+    if (indeks >= 0)
+        printf("Pronadena %s (tecaj %.3lf)\n", lista[indeks].kod, lista[indeks].tecaj);
+    else
+        printf("Valuta nije pronadena.\n");
+
+    strcpy(zadnjiKod, trazeniKod);
+    printf("Zadnji trazeni kod: %s\n", zadnjiKod);
+
+    free(lista);
+}
+
+/* ------------------ CONVERSION ------------------ */
+void konvertirajValutu() {
+    Valuta* lista = NULL;
+    int broj = ucitajSveValute(&lista);
+
+    char kodIz[4], kodU[4];
+    double iznos;
+
+    printf("Unesi kod FROM: ");
+    scanf("%3s", kodIz);
+    printf("Unesi kod TO: ");
+    scanf("%3s", kodU);
+    printf("Unesi iznos: ");
+    scanf("%lf", &iznos);
+
+    double tecajIz = -1, tecajU = -1;
+
+    for (int i = 0; i < broj; i++) {
+        if (strcmp(lista[i].kod, kodIz) == 0) tecajIz = lista[i].tecaj;
+        if (strcmp(lista[i].kod, kodU) == 0) tecajU = lista[i].tecaj;
+    }
+
+    if (tecajIz == -1 || tecajU == -1) {
+        printf("Valuta ne postoji.\n");
+        free(lista);
+        return;
+    }
+
+    double rezultat = iznos * (tecajU / tecajIz);
+    printf("%.2lf %s = %.2lf %s\n", iznos, kodIz, rezultat, kodU);
+
+    free(lista);
+}

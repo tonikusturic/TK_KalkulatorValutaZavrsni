@@ -1,3 +1,6 @@
+#ifndef VALUTA_H
+#define VALUTA_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -14,7 +17,6 @@ typedef enum {
     IZBORNIK_PRIKAZI,
     IZBORNIK_AZURIRAJ,
     IZBORNIK_OBRISI,
-    IZBORNIK_SORTIRAJ,
     IZBORNIK_TRAZI,
     IZBORNIK_KONVERTIRAJ,
     IZBORNIK_RESET,
@@ -32,3 +34,9 @@ void obrisiValutu();
 void sortirajValute();
 void traziValutu();
 void konvertirajValutu();
+void resetirajDatoteku();
+int rekurzivnoTrazi(Valuta* lista, int broj, const char* kodValute);
+void spremiSveValute(Valuta **lista, int broj);
+int ucitajSveValute(Valuta **lista);
+
+#endif

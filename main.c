@@ -1,5 +1,8 @@
-#include "valuta.h"
+#define _CRT_SECURE_NO_WARNINGS
+#include "valute.h"
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 int main() {
     int izbor;
@@ -13,23 +16,22 @@ int main() {
         printf("2. Prikazi valute\n");
         printf("3. Azuriraj valutu\n");
         printf("4. Obrisi valutu\n");
-        printf("5. Sortiraj valute\n");
-        printf("6. Trazi valutu\n");
-        printf("7. Konvertiraj iznos\n");
-        printf("8. Resetiraj datoteku\n");
-        printf("9. Izlaz\n");
+        printf("5. Trazi valutu\n");
+        printf("6. Konvertiraj iznos\n");
+        printf("7. Resetiraj datoteku\n");
+        printf("8. Izlaz\n");
 
         printf("Odabir: ");
         scanf("%d", &izbor);
 
         switch ((IzbornikOpcija)izbor) {
-        case IZBORNIK_DODaj: dodajValutu(); break;
+        case IZBORNIK_DODAJ: dodajValutu(); break;
         case IZBORNIK_PRIKAZI: prikaziValute(); break;
         case IZBORNIK_AZURIRAJ: azurirajValutu(); break;
         case IZBORNIK_OBRISI: obrisiValutu(); break;
-        case IZBORNIK_SORTIRAJ: sortirajValute(); break;
         case IZBORNIK_TRAZI: traziValutu(); break;
         case IZBORNIK_KONVERTIRAJ: konvertirajValutu(); break;
+        case IZBORNIK_RESET: resetirajDatoteku(); break;
         case IZBORNIK_IZLAZ: radi = false; break;
         default: printf("Neispravan unos!\n");
         }

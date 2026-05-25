@@ -1,23 +1,189 @@
-Obavezni koncepti:
-1 2.sat
-2 
-3 2.sat
-4 
-5 
-6 
-7 
-8-
-9-
-10 
-11 
-12 
-13 
-15 2.sat
-16 2.sat
-17 2.sat
-18 -
-20 
-22 
+1. Minimum koji studenti MORAJU imati je implementirani CRUID. Create-Read-Update-InsertDelete i tu se misli na kontekst sadržaja koji se zapisuje u datoteku koja može biti tekstualna ili
+binarna. Dalje samo nadograđujete svoj program!
 
-Za napraviti:
-14,19,21,23,24,25,26
+void dodajValutu(void);
+void prikaziValute(void);
+void azurirajValutu(void);
+void obrisiValutu(void);
+
+
+2. Odabir konkretnih primitivnih tipova podataka za rad s cjelobrojnim i realnim konstantama.
+
+int broj;
+double tecaj;
+char kod[4];
+
+
+3. Odabir konkretnih složenih tipova podataka za rad sa specifičnim objektima.
+
+typedef struct {
+    char kod[4];
+    double tecaj;
+} Valuta;
+
+4. Primjena typedef sa strukturama i unijama, po potrebi s enum tipovima podataka tamo gdje
+treba.
+
+typedef struct {
+    char kod[4];
+    double tecaj;
+} Valuta;
+
+typedef enum {
+    IZBORNIK_DODAJ = 1,
+    IZBORNIK_PRIKAZI,
+    IZBORNIK_AZURIRAJ,
+    IZBORNIK_OBRISI,
+    IZBORNIK_SORTIRAJ,
+    IZBORNIK_TRAZI,
+    IZBORNIK_KONVERTIRAJ,
+    IZBORNIK_RESET,
+    IZBORNIK_IZLAZ
+} IzbornikOpcija;
+
+
+5. Imenovanje identifikatora (varijabli, konstanti, polja, funkcija, pokazivača…) – upotreba
+camelCase, PascalCase i snake_case konzistento kroz cijeli projekt.
+
+void konvertirajValutu(void);
+int ucitajSveValute(Valuta **lista);
+double prosjecniTecaj(Valuta *lista, int broj);
+
+6. Primjena ključne riječi static za globalne i lokalne varijable.
+
+static const char *PUTANJA_DATOTEKE = "valute.txt";
+static const int MAX_VALUTA = 100;
+
+7. Organizacija izvornog kôda.
+
+main.c
+valuta.c
+valuta.h
+util.h
+
+8. Primjena extern ključne riječi za globalne varijable.
+
+extern int brojacDodavanja;   // u valuta.h
+int brojacDodavanja = 0;      // u valuta.c
+
+9. Ako su funkcije jednostavne koristiti makro funkcije ili inline funkcije.
+
+static inline void* sigurnoAlociraj(size_t velicina);
+
+10. Izbornik/podizbornici.
+
+printf("1. Dodaj valutu\n");
+printf("2. Prikazi valute\n");
+printf("3. Azuriraj valutu\n");
+printf("4. Obrisi valutu\n");
+printf("9. Izlaz\n");
+
+11. Kod izbornika koristiti enum tipove ili makro simbole.
+
+switch ((IzbornikOpcija)izbor) {
+    case IZBORNIK_DODAJ: dodajValutu(); break;
+    case IZBORNIK_OBRISI: obrisiValutu(); break;
+}
+
+
+12. Generalno upotreba pokazivača tamo gdje su potrebni.
+
+int ucitajSveValute(Valuta **lista);
+Valuta *lista = NULL;
+
+13. Generalno upotreba struktura i funkcija.
+
+double prosjecniTecaj(Valuta *lista, int broj) {
+    double suma = 0;
+    for (int i = 0; i < broj; i++)
+        suma += lista[i].tecaj;
+    return broj ? suma / broj : 0;
+}
+
+14. Zaštita parametara kod svih funkcija.
+
+if (lista == NULL || broj < 0) {
+    fprintf(stderr, "Neispravni parametri za spremiSveValute.\n");
+    return;
+}
+
+15. Koristiti statički zauzeta polja gdje su potrebna, nikako ne koristiti VLA polja.
+
+static const int MAX_VALUTA = 100;
+static char zadnjiKod[4];
+
+16. Koristiti dinamičko zauzimanje memorije za bilo koji tip podatka, osobito za složene tipove
+podataka.
+
+*lista = sigurnoAlociraj(sizeof(Valuta) * MAX_VALUTA);
+
+17. Koristiti funkcije malloc(), calloc(), realloc(), free() – neku od njih, ako ne i sve.
+
+void *p = malloc(velicina);
+free(lista);
+
+18. Sigurno brisanje memorije koja je dinamički zauzeta, anuliranje memorijskog prostora, provjera
+pokazivača kako se ne bi dogodila pogreška double free() i anuliranje svih pokazivača koji su bili
+usmjereni na memorijski prostor koji se dinamički zauzeo.
+
+if (!p) {
+    perror("Greska: alokacija memorije");
+    exit(EXIT_FAILURE);
+}
+
+19. Datoteke, koristiti tekstualnu ili binarnu, provjera pokazivača i zatvaranje datoteke.
+
+FILE *dat = fopen(PUTANJA_DATOTEKE, "r");
+fprintf(dat, "%s %.2lf\n", lista[i].kod, lista[i].tecaj);
+fclose(dat);
+
+20. Koristiti funkcije fseek(), ftell(), rewind(), ovisno o potrebi – neku od njih ako ne sve.
+
+fseek(dat, 0, SEEK_END);
+long velicina = ftell(dat);
+rewind(dat);
+printf("Velicina datoteke: %ld bajtova\n", velicina);
+
+21. Koristiti funkcije remove(), rename(), po potrebi implementirati funkciju za kopiranje datoteka.
+
+if (remove(PUTANJA_DATOTEKE) == 0)
+    printf("Datoteka obrisana.\n");
+
+22. Upravljati s pogreškama, errno, perror(), strerror(), feof(), ferror() – neku od njih ako ne sve.
+
+if (!dat) {
+    perror("Greska pri otvaranju datoteke");
+    return;
+}
+
+23. Sortiranje – preporuka koristiti ugrađenu qsort() funkciju, inače se može koristiti bilo koja
+funkcija sortiranja.
+
+qsort(lista, broj, sizeof(Valuta), usporedbaTecajeva);
+
+int usporedbaTecajeva(const void *a, const void *b) {
+    const Valuta *v1 = a;
+    const Valuta *v2 = b;
+    return (v1->tecaj > v2->tecaj) - (v1->tecaj < v2->tecaj);
+}
+
+24. Pretraživanje – preporuka koristiti ugrađenu bsearch() funkciju, inače se može koristiti bilo koja
+funkcija pretraživanja.
+
+int rekurzivnoTrazi(Valuta *lista, int broj, const char *kodValute) {
+    if (broj == 0) return -1;
+    if (strcmp(lista[broj - 1].kod, kodValute) == 0)
+        return broj - 1;
+    return rekurzivnoTrazi(lista, broj - 1, kodValute);
+}
+
+25. Rekurzije je najlakše koristiti primjenom rekurzivnih algoritama sortiranja kao što su quick sort,
+merge sort, insert sort ili pretraživanja kao što je binary search.
+
+return rekurzivnoTrazi(lista, broj - 1, kodValute);
+
+26. Pokazivače na funkcije je najlakše koristiti upotrebom funkcije qsort() ili bsearch() iz standardne
+biblioteke.
+
+int usporedbaTecajeva(const void *a, const void *b);
+qsort(lista, broj, sizeof(Valuta), usporedbaTecajeva);

@@ -17,6 +17,7 @@ typedef enum {
     IZBORNIK_PRIKAZI,
     IZBORNIK_AZURIRAJ,
     IZBORNIK_OBRISI,
+    IZBORNIK_SORTIRAJ,
     IZBORNIK_TRAZI,
     IZBORNIK_KONVERTIRAJ,
     IZBORNIK_RESET,
@@ -35,8 +36,11 @@ void sortirajValute();
 void traziValutu();
 void konvertirajValutu();
 void resetirajDatoteku();
+
+int ucitajSveValute(Valuta** lista);
+void spremiSveValute(Valuta* lista, int broj);
+int usporedbaTecajeva(const void* a, const void* b);
 int rekurzivnoTrazi(Valuta* lista, int broj, const char* kodValute);
-void spremiSveValute(Valuta **lista, int broj);
-int ucitajSveValute(Valuta **lista);
+double prosjecniTecaj(Valuta* lista, int broj);
 
 #endif

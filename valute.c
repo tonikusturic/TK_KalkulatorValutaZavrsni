@@ -1,5 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include "valute.h"
+#include "valuta.h"
 #include "util.h"
 #include <string.h>
 #include <errno.h>
@@ -58,6 +57,7 @@ void prikaziValute() {
         lista[broj++] = temp;
     }
 
+    printf("Prosjecni tecaj: %.3lf\n", prosjecniTecaj(lista, broj));
 
     free(lista);
     fclose(dat);
@@ -86,12 +86,9 @@ void azurirajValutu() {
             printf("Azurirano.\n");
             return;
         }
-        else
-        {
-            printf("Valuta nije pronadena.\n");
-        }
     }
-   
+
+    printf("Valuta nije pronadena.\n");
     free(lista);
 }
 
@@ -116,7 +113,24 @@ void obrisiValutu() {
     printf("Valuta obrisana.\n");
 }
 
+/* ------------------ SORT ------------------ */
+void sortirajValute() {
+    Valuta* lista = NULL;
+    int broj = ucitajSveValute(&lista);
 
+    qsort(lista, broj, sizeof(Valuta), usporedbaTecajeva);
+
+    spremiSveValute(lista, broj);
+    free(lista);
+
+    printf("Sortirano po tecaju.\n");
+}
+
+int usporedbaTecajeva(const void* a, const void* b) {
+    const Valuta* v1 = (const Valuta*)a;
+    const Valuta* v2 = (const Valuta*)b;
+    return (v1->tecaj > v2->tecaj) - (v1->tecaj < v2->tecaj);
+}
 
 /* ------------------ SEARCH (rekurzija) ------------------ */
 int rekurzivnoTrazi(Valuta* lista, int broj, const char* kodValute) {
@@ -139,11 +153,13 @@ void traziValutu() {
 
     int indeks = rekurzivnoTrazi(lista, broj, trazeniKod);
 
-    if (indeks > 0)
+    if (indeks >= 0)
         printf("Pronadena %s (tecaj %.3lf)\n", lista[indeks].kod, lista[indeks].tecaj);
     else
         printf("Valuta nije pronadena.\n");
 
+    strcpy(zadnjiKod, trazeniKod);
+    printf("Zadnji trazeni kod: %s\n", zadnjiKod);
 
     free(lista);
 }
@@ -170,67 +186,64 @@ void konvertirajValutu() {
         if (strcmp(lista[i].kod, kodU) == 0) tecajU = lista[i].tecaj;
     }
 
-    if (tecajIz != -1 || tecajU != -1) {
-        double rezultat = iznos * (tecajU / tecajIz);
-        if (rezultat < 0) {
-            rezultat *= -1;
-        }
-        printf("%.2lf %s = %.2lf %s\n", iznos, kodIz, rezultat, kodU);
-
-        free(lista);
-    }
-    else {
+    if (tecajIz == -1 || tecajU == -1) {
         printf("Valuta ne postoji.\n");
         free(lista);
         return;
     }
-    
+
+    double rezultat = iznos * (tecajU / tecajIz);
+    printf("%.2lf %s = %.2lf %s\n", iznos, kodIz, rezultat, kodU);
+
+    free(lista);
 }
 
-/* ------------------ REMOVE ------------------ */
-
+/* ------------------ REMOVE() funkcija ------------------ */
 void resetirajDatoteku() {
-
-    if (remove(PUTANJA_DATOTEKE) == 0) {
+    if (remove(PUTANJA_DATOTEKE) == 0)
         printf("Datoteka obrisana.\n");
-    }
     else
-    {
-        perror("Brisanje nije uspjelo.\n");
-    }
+        perror("Brisanje nije uspjelo");
 }
+
 /* ------------------ LOADING AND SAVING ------------------ */
-
-void spremiSveValute(Valuta* lista, int broj) {
-
-    FILE* dat = fopen(PUTANJA_DATOTEKE, "w");
-
-    if (!dat) {
-        perror("Greska upisa");
-        return;
-    }
-    for (int i = 0; i < broj; i++) {
-        fprintf(dat, "%s %.lf\n", lista[i].kod, lista[i].tecaj);
-    }
-    fclose(dat);
-
-
-}
-
 int ucitajSveValute(Valuta** lista) {
-
     FILE* dat = fopen(PUTANJA_DATOTEKE, "r");
     if (!dat) {
         perror("Greska pri otvaranju");
         return 0;
     }
+
     *lista = sigurnoAlociraj(sizeof(Valuta) * MAX_VALUTA);
+
     int broj = 0;
     while (fscanf(dat, "%3s %lf", (*lista)[broj].kod, &(*lista)[broj].tecaj) == 2)
-    {
         broj++;
-        fclose(dat);
-        return broj;
+
+    fclose(dat);
+    return broj;
+}
+
+void spremiSveValute(Valuta* lista, int broj) {
+    FILE* dat = fopen(PUTANJA_DATOTEKE, "w");
+    if (!dat) {
+        perror("Greska upisa");
+        return;
     }
 
+    for (int i = 0; i < broj; i++)
+        fprintf(dat, "%s %.2lf\n", lista[i].kod, lista[i].tecaj);
+
+    fclose(dat);
+}
+
+/* ------------------ AVERAGE ------------------ */
+double prosjecniTecaj(Valuta* lista, int broj) {
+    if (broj == 0) return 0;
+
+    double suma = 0;
+    for (int i = 0; i < broj; i++)
+        suma += lista[i].tecaj;
+
+    return suma / broj;
 }

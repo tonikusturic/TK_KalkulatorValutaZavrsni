@@ -1,13 +1,13 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "valuta.h"
 #include "util.h"
 #include <string.h>
 #include <errno.h>
 
-/* (6,15) static varijable */
+
 static const char* PUTANJA_DATOTEKE = "valute.txt";
 static const int MAX_VALUTA = 100;
 
-/* (8) globalna varijabla */
 int brojacDodavanja = 0;
 
 /* ------------------ CREATE ------------------ */
@@ -20,9 +20,21 @@ void dodajValutu() {
 
     Valuta nova;
     printf("Unesi kod valute: ");
-    scanf("%3s", nova.kod);
+    
+    if (scanf("%3s", nova.kod) != 1)
+    {
+        printf("Greska, unesena kriva vrijednost.\n");
+    }
+
     printf("Unesi tecaj prema EUR: ");
-    scanf("%lf", &nova.tecaj);
+  
+    printf("Unesi tecaj prema EUR: ");
+
+    if (scanf("%lf", &nova.tecaj) != 1)
+    {
+        printf("Greska, unesena kriva vrijednost.\n");
+    }
+    
 
     fprintf(dat, "%s %.2lf\n", nova.kod, nova.tecaj);
     fclose(dat);
@@ -38,8 +50,6 @@ void prikaziValute() {
         perror("Greska otvaranja datoteke");
         return;
     }
-
-    /* (20) fseek, ftell, rewind */
     fseek(dat, 0, SEEK_END);
     long velicina = ftell(dat);
     rewind(dat);
@@ -74,12 +84,21 @@ void azurirajValutu() {
 
     char kodValute[4];
     printf("Unesi kod za azuriranje: ");
-    scanf("%3s", kodValute);
+
+    if (scanf("%3s", kodValute) != 1)
+    {
+        printf("Greska, unesena kriva vrijednost.\n");
+    }
+
 
     for (int i = 0; i < broj; i++) {
         if (strcmp(lista[i].kod, kodValute) == 0) {
             printf("Unesi novi tecaj: ");
-            scanf("%lf", &lista[i].tecaj);
+
+            if (scanf("%lf", &lista[i].tecaj))
+            {
+                printf("Greska, unesena kriva vrijednost.\n");
+            }
 
             spremiSveValute(lista, broj);
             free(lista);
@@ -100,7 +119,12 @@ void obrisiValutu() {
 
     char kodValute[4];
     printf("Unesi kod za brisanje: ");
-    scanf("%3s", kodValute);
+
+    if (scanf("%3s", kodValute) != 1)
+    {
+        printf("Greska, unesena kriva vrijednost.\n");
+    }
+    
 
     int noviBroj = 0;
     for (int i = 0; i < broj; i++) {
@@ -145,11 +169,16 @@ void traziValutu() {
     Valuta* lista = NULL;
     int broj = ucitajSveValute(&lista);
 
-    static char zadnjiKod[4];  /* (15) lokalna static varijabla */
+    static char zadnjiKod[4]; 
 
     char trazeniKod[4];
     printf("Unesi kod za trazenje: ");
-    scanf("%3s", trazeniKod);
+
+    if (scanf("%3s", trazeniKod) != 1)
+    {
+        printf("Greska, unesena kriva vrijednost.\n");
+    }
+    
 
     int indeks = rekurzivnoTrazi(lista, broj, trazeniKod);
 
@@ -172,12 +201,23 @@ void konvertirajValutu() {
     char kodIz[4], kodU[4];
     double iznos;
 
+
     printf("Unesi kod FROM: ");
-    scanf("%3s", kodIz);
+    if (scanf("%3s", kodIz) != 1)
+    {
+        printf("Greska, unesena kriva vrijednost.\n");
+    }
     printf("Unesi kod TO: ");
-    scanf("%3s", kodU);
+    if (scanf("%3s", kodU) != 1)
+    {
+        printf("Greska, unesena kriva vrijednost.\n");
+    }
     printf("Unesi iznos: ");
-    scanf("%lf", &iznos);
+    if (scanf("%lf", &iznos) != 1)
+    {
+        printf("Greska, unesena kriva vrijednost.\n");
+    }
+   
 
     double tecajIz = -1, tecajU = -1;
 
@@ -247,3 +287,4 @@ double prosjecniTecaj(Valuta* lista, int broj) {
 
     return suma / broj;
 }
+

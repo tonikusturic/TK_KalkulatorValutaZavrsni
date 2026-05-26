@@ -5,13 +5,13 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-/* (3,4) Struktura s jasnim nazivima */
+
 typedef struct {
-    char kod[4];          // kod valute, npr. "USD"
-    double tecaj;         // tečaj u odnosu na EUR
+    char kod[4];          
+    double tecaj;         
 } Valuta;
 
-/* (11) Enum izbornika */
+
 typedef enum {
     IZBORNIK_DODAJ = 1,
     IZBORNIK_PRIKAZI,
@@ -24,10 +24,10 @@ typedef enum {
     IZBORNIK_IZLAZ
 } IzbornikOpcija;
 
-/* (8) extern globalna varijabla */
+
 extern int brojacDodavanja;
 
-/* Funkcije (10,13) */
+
 void dodajValutu();
 void prikaziValute();
 void azurirajValutu();

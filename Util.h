@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* (9,16,17,18) Sigurno zauzimanje memorije */
 static inline void* sigurnoAlociraj(size_t velicina) {
     void* p = malloc(velicina);
     if (!p) {
